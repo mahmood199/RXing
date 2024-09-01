@@ -78,6 +78,7 @@ class MainViewModel : ViewModel() {
             Operator.Just -> showCaseJust()
             Operator.Range -> showCaseRange()
             Operator.Repeat -> showCaseRepeat()
+            Operator.FlatMap -> showCaseFlatMap()
         }
     }
 
@@ -141,6 +142,44 @@ class MainViewModel : ViewModel() {
 
     private fun showCaseRepeat() {
 
+    }
+
+    private fun showCaseFlatMap() {
+        val observable = Observable.just(12, 13, 16)
+
+        val observer = object : Observer<String> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseFlatMap")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseFlatMap")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseFlatMap")
+            }
+
+            override fun onNext(t: String) {
+                Log.d(TAG, "onNext called for showCaseFlatMap with value: $t")
+            }
+        }
+
+        observable
+            .flatMap { id ->
+                getProfileName(id)
+            }
+            .subscribe(observer)
+    }
+
+    private fun getProfileName(id: Int): Observable<String> {
+        return when (id) {
+            12 -> Observable.just("getProfileName $id")
+            13 -> Observable.just("getProfileName $id")
+            else -> Observable.error(Throwable("Some error popped up"))
+        }
     }
 
     override fun onCleared() {

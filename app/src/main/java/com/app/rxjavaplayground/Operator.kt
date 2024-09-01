@@ -10,4 +10,6 @@ sealed interface Operator {
 
     data object Interval: Operator
 
+    data object FlatMap: Operator
+
 }
