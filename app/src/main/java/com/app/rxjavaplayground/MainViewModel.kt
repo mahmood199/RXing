@@ -72,6 +72,77 @@ class MainViewModel : ViewModel() {
         observable.subscribe(singleObserver)
     }
 
+    fun creationOperators(operator: Operator) {
+        when (operator) {
+            Operator.Interval -> showCaseInterval()
+            Operator.Just -> showCaseJust()
+            Operator.Range -> showCaseRange()
+            Operator.Repeat -> showCaseRepeat()
+        }
+    }
+
+    private fun showCaseInterval() {
+        val observable = Observable.interval(1, TimeUnit.SECONDS)
+
+        val observer = object : Observer<Long> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseInterval")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseInterval")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseInterval")
+            }
+
+            override fun onNext(t: Long) {
+                Log.d(TAG, "onNext called for showCaseInterval with value: $t")
+                if (t == 20L)
+                    onComplete()
+            }
+        }
+
+        observable.subscribe(observer)
+    }
+
+    private fun showCaseJust() {
+
+    }
+
+    private fun showCaseRange() {
+        val observable = Observable.range(0, 10).repeat(2)
+
+        val observer = object : Observer<Int> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseRange")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseRange")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseRange")
+            }
+
+            override fun onNext(t: Int) {
+                Log.d(TAG, "onNext called for showCaseRange with value: $t")
+            }
+        }
+
+        observable.subscribe(observer)
+    }
+
+    private fun showCaseRepeat() {
+
+    }
+
     override fun onCleared() {
         compositeDisposable.clear()
         super.onCleared()

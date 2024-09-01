@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showDataFlowOfRxJava() {
-        viewModel.showDataFlowOfRxJavaUsingSingle()
+        viewModel.creationOperators(Operator.Interval)
     }
 }
 
