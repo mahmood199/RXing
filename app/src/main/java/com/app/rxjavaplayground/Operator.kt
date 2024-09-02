@@ -18,4 +18,6 @@ sealed interface Operator {
 
     data object ErrorHandling: Operator
 
+    data object Delay: Operator
+
 }

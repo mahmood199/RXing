@@ -4,11 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleObserver
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.BiFunction
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.schedulers.Timed
 import java.util.concurrent.TimeUnit
 
 class MainViewModel : ViewModel() {
@@ -83,6 +86,7 @@ class MainViewModel : ViewModel() {
             Operator.Debounce -> showCaseDebounce()
             Operator.Concat -> showCaseConcat()
             Operator.ErrorHandling -> showCaseErrorHandling()
+            Operator.Delay -> showCaseUtilityOperators()
         }
     }
 
@@ -290,6 +294,34 @@ class MainViewModel : ViewModel() {
                 count <= 2
             }
             .subscribe(observer)
+    }
+
+    private fun showCaseUtilityOperators() {
+        val observable = Observable.just("1", "2", "3", "4")
+        val observer = object : Observer<Timed<String>> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseUtilityOperators")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseUtilityOperators")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseUtilityOperators")
+            }
+
+            override fun onNext(t: Timed<String>) {
+                Log.d(TAG, "onNext called for showCaseUtilityOperators with value: $t")
+            }
+        }
+
+        observable
+//            .delay(1, TimeUnit.SECONDS)
+//            .timeout()
+            .timeInterval(TimeUnit.SECONDS).subscribe(observer)
     }
 
     override fun onCleared() {
