@@ -16,4 +16,6 @@ sealed interface Operator {
 
     data object Concat: Operator
 
+    data object ErrorHandling: Operator
+
 }

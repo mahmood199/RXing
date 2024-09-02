@@ -82,6 +82,7 @@ class MainViewModel : ViewModel() {
             Operator.FlatMap -> showCaseFlatMap()
             Operator.Debounce -> showCaseDebounce()
             Operator.Concat -> showCaseConcat()
+            Operator.ErrorHandling -> showCaseErrorHandling()
         }
     }
 
@@ -247,11 +248,48 @@ class MainViewModel : ViewModel() {
         }
 
         val resultantObservable =
-            Observable.zip(observable2, observable1, BiFunction { x, y->
+            Observable.zip(observable2, observable1, BiFunction { x, y ->
                 return@BiFunction x + y
             })
 
         resultantObservable.subscribe(observer)
+    }
+
+    private fun showCaseErrorHandling() {
+        val observable = Observable.just("1", "2", "3", "A", "4")
+        val observer = object : Observer<Int> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseErrorHandling")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseErrorHandling")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseErrorHandling")
+            }
+
+            override fun onNext(t: Int) {
+                Log.d(TAG, "onNext called for showCaseErrorHandling with value: $t")
+            }
+        }
+
+        observable.map { it.toInt() }
+//            .onErrorResumeNext {
+//                Observable.just(10, 20, 30)
+//            }
+            /*
+                        .onErrorComplete{
+                            true
+                        }
+            */
+            .retry { count, throwable ->
+                count <= 2
+            }
+            .subscribe(observer)
     }
 
     override fun onCleared() {
@@ -260,5 +298,4 @@ class MainViewModel : ViewModel() {
         }
         super.onCleared()
     }
-
 }
