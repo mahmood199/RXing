@@ -12,4 +12,8 @@ sealed interface Operator {
 
     data object FlatMap: Operator
 
+    data object Debounce: Operator
+
+    data object Concat: Operator
+
 }

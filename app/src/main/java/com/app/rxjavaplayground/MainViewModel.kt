@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleObserver
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.functions.BiFunction
 import java.util.concurrent.TimeUnit
 
 class MainViewModel : ViewModel() {
@@ -79,6 +80,8 @@ class MainViewModel : ViewModel() {
             Operator.Range -> showCaseRange()
             Operator.Repeat -> showCaseRepeat()
             Operator.FlatMap -> showCaseFlatMap()
+            Operator.Debounce -> showCaseDebounce()
+            Operator.Concat -> showCaseConcat()
         }
     }
 
@@ -182,8 +185,79 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private fun showCaseDebounce() {
+        val observable = Observable.create { emitter ->
+            emitter.onNext("First Value")
+            Thread.sleep(1200)
+            emitter.onNext("Second Value")
+            Thread.sleep(500)
+            emitter.onNext("Third Value")
+            emitter.onNext("Fourth Value")
+            Thread.sleep(500)
+            emitter.onNext("Fifth Value")
+
+            emitter.onComplete()
+        }
+
+        val observer = object : Observer<String> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseDebounce")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseDebounce")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseDebounce")
+            }
+
+            override fun onNext(t: String) {
+                Log.d(TAG, "onNext called for showCaseDebounce with value: $t")
+            }
+        }
+
+        observable.debounce(1, TimeUnit.SECONDS).subscribe(observer)
+    }
+
+    private fun showCaseConcat() {
+        val observable1 = Observable.just("A", "B", "C", "D", "E").getAsyncItems()
+        val observable2 = Observable.just("1", "2", "3", "4").getAsyncItems()
+
+        val observer = object : Observer<String> {
+            override fun onSubscribe(d: Disposable) {
+                compositeDisposable.add(d)
+                Log.d(TAG, "onSubscribe called for showCaseConcat")
+            }
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+                Log.d(TAG, "onError called for showCaseConcat")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete called for showCaseConcat")
+            }
+
+            override fun onNext(t: String) {
+                Log.d(TAG, "onNext called for showCaseConcat with value: $t")
+            }
+        }
+
+        val resultantObservable =
+            Observable.zip(observable2, observable1, BiFunction { x, y->
+                return@BiFunction x + y
+            })
+
+        resultantObservable.subscribe(observer)
+    }
+
     override fun onCleared() {
-        compositeDisposable.clear()
+        if (compositeDisposable.isDisposed.not()) {
+            compositeDisposable.dispose()
+        }
         super.onCleared()
     }
 
